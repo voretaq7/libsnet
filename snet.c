@@ -17,7 +17,6 @@
 #include <ctype.h>
 #include <string.h>
 #include <inttypes.h>
-#include <syslog.h>
 
 #include <netinet/in.h>
 
@@ -125,11 +124,11 @@ snet_timeout( SNET *sn, int flag, struct timeval *tv )
 {
     if ( flag & SNET_READ_TIMEOUT ) {
 	sn->sn_flag |= SNET_READ_TIMEOUT;
-	memcpy( &(sn->sn_read_timeout), tv, sizeof( struct timeval ));
+	sn->sn_read_timeout = *tv;
     }
     if ( flag & SNET_WRITE_TIMEOUT ) {
 	sn->sn_flag |= SNET_WRITE_TIMEOUT;
-	memcpy( &(sn->sn_write_timeout), tv, sizeof( struct timeval ));
+	sn->sn_write_timeout = *tv;
     }
     return;
 }
@@ -467,7 +466,7 @@ snet_select( int nfds, fd_set *rfds, fd_set *wfds, fd_set *efds,
     }
 #endif /* linux */
 
-    rc = select( nfds, rfds, wfds, efds, tv );
+    rc = select( nfds, rfds, wfds, wfds, tv );
 
 #ifndef linux
     if ( gettimeofday( &tv_end, NULL ) < 0 ) {
@@ -638,7 +637,7 @@ snet_readread( sn, buf, len, tv )
 	tv = &default_tv;
     }
 
-    if ( sn->sn_flag & SNET_TLS ) {
+    if ( sn->sn_flag* & SNET_TLS ) {
 	/* Check to see if there is already data in SSL buffer */
 	haveinput = SSL_pending( sn->sn_ssl );
     }
