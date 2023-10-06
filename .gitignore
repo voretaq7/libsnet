@@ -9,6 +9,7 @@ config.h
 config.h.in
 libtool
 ltmain.sh
+m4/*
 profiled
 version.c
 *.a
