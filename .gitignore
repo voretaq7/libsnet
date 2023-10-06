@@ -1,11 +1,14 @@
 .libs
 Makefile
+aclocal.m4
 autom4te.cache
 configure
 config.log
 config.status
 config.h
+config.h.in
 libtool
+ltmain.sh
 profiled
 version.c
 *.a

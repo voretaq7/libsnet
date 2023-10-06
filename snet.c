@@ -21,9 +21,7 @@
 
 #include <netinet/in.h>
 
-#ifdef HAVE_LIBSSL
 #include <openssl/ssl.h>
-#endif /* HAVE_LIBSSL */
 
 #ifdef HAVE_ZLIB
 #include <zlib.h>
@@ -102,6 +100,7 @@ snet_open( path, flags, mode, max )
     char	*path;
     int		flags;
     int		mode;
+    int         max;
 {
     int		fd;
 
@@ -140,7 +139,6 @@ snet_timeout( SNET *sn, int flag, struct timeval *tv )
     return;
 }
 
-#ifdef HAVE_LIBSSL
 /*
  * Returns 0 on success, and all further communication is through
  * the OpenSSL layer.  Returns -1 on failure, check the OpenSSL error
@@ -170,7 +168,6 @@ snet_starttls( sn, sslctx, sslaccept )
     }
     return( rc );
 }
-#endif /* HAVE_LIBSSL */
 
 #ifdef HAVE_LIBSASL
     int
@@ -536,15 +533,11 @@ snet_write0( sn, buf, len, tv )
 
     if ( tv == NULL ) {
 	if ( sn->sn_flag & SNET_TLS ) {
-#ifdef HAVE_LIBSSL
 	    /*
 	     * If SSL_MODE_ENABLE_PARTIAL_WRITE has been set, this routine
 	     * can (abnormally) return less than a full write.
 	     */
 	    return( SSL_write( sn->sn_ssl, buf, len ));
-#else
-	    return( -1 );
-#endif /* HAVE_LIBSSL */
 	} else {
 	    return( write( snet_fd( sn ), buf, len ));
 	}
@@ -572,7 +565,6 @@ snet_write0( sn, buf, len, tv )
 	}
 
 	if ( sn->sn_flag & SNET_TLS ) {
-#ifdef HAVE_LIBSSL
 	    /*
 	     * Make sure we ARE allowing partial writes.  This can't
 	     * be turned off!!!
@@ -601,9 +593,6 @@ snet_write0( sn, buf, len, tv )
 		    goto restoreblocking;
 		}
 	    }
-#else
-	    goto restoreblocking;
-#endif /* HAVE_LIBSSL */
 	} else {
 	    if (( rc = write( snet_fd( sn ), buf, len )) < 0 ) {
 		if ( errno == EAGAIN ) {
@@ -802,12 +791,10 @@ snet_read1( sn, buf, len, tv )
 
     if ( tv ) {
 	dontblock = 1;
-#ifdef HAVE_LIBSSL
 	/* Check to see if there is already data in SSL buffer */
 	if ( sn->sn_flag & SNET_TLS ) {
 	    dontblock = ! SSL_pending( sn->sn_ssl );
 	}
-#endif /* HAVE_LIBSSL */
     }
 
     if ( dontblock ) {
@@ -835,7 +822,6 @@ retry:
     }
 
     if ( sn->sn_flag & SNET_TLS ) {
-#ifdef HAVE_LIBSSL
 	if (( rc = SSL_read( sn->sn_ssl, buf, len )) < 0 ) {
 	    switch ( SSL_get_error( sn->sn_ssl, rc )) {
 	    case SSL_ERROR_WANT_WRITE :
@@ -858,9 +844,6 @@ retry:
 		goto restoreblocking;
 	    }
 	}
-#else /* HAVE_LIBSSL */
-	rc = -1;
-#endif /* HAVE_LIBSSL */
     } else {
 	rc = read( snet_fd( sn ), buf, len );
     }

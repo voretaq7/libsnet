@@ -30,9 +30,7 @@ typedef struct {
     int			sn_zbuflen;
 #endif /* HAVE_ZLIB */
 
-#ifdef HAVE_LIBSSL
     void		*sn_ssl;
-#endif /* HAVE_LIBSSL */
 
 #ifdef HAVE_LIBSASL
     sasl_conn_t		*sn_conn;
@@ -72,9 +70,7 @@ int	snet_hasdata ___P(( SNET * ));
 ssize_t	snet_read ___P(( SNET *, char *, size_t, struct timeval * ));
 ssize_t	snet_write ___P(( SNET *, char *, size_t, struct timeval * ));
 int	snet_setcompression( SNET *, int, int );
-#ifdef HAVE_LIBSSL
 int	snet_starttls ___P(( SNET *, SSL_CTX *, int ));
-#endif
 #ifdef HAVE_LIBSASL
 int	snet_setsasl  ___P(( SNET *, sasl_conn_t * ));
 #endif
