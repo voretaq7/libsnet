@@ -17,3 +17,4 @@ version.c
 *.lo
 *.o
 *.slo
+*~
