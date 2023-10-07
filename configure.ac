@@ -11,6 +11,9 @@ AC_PROG_AWK
 AC_PROG_CC
 AC_PROG_INSTALL
 
+# Check for stdarg.h (ANSI/ISO C variadic functions only)
+AC_CHECK_HEADER([stdarg.h], [], [AC_MSG_ERROR([Header file stdarg.h missing - ANSI/ISO style variadic functions are required.])])
+
 # Checks for OpenSSL/Crypto
 AC_CHECK_HEADER([openssl/ssl.h], [], [AC_MSG_ERROR([header file <openssl/ssl.h> is required.])])
 AC_CHECK_LIB([ssl], [SSL_accept], , [AC_MSG_ERROR([Couldn't find SSL_accept in libssl. SSL is mandatory.])])

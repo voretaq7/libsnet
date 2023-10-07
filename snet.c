@@ -18,6 +18,7 @@
 #include <string.h>
 #include <inttypes.h>
 #include <syslog.h>
+#include <stdarg.h>
 
 #include <netinet/in.h>
 
@@ -31,11 +32,6 @@
 #include <sasl/sasl.h>
 #endif /* HAVE_LIBSASL */
 
-#ifdef __STDC__
-#include <stdarg.h>
-#else /* __STDC__ */
-#include <varargs.h>
-#endif /* __STDC__ */
 
 #include "snet.h"
 
@@ -64,9 +60,7 @@ snet_eof( SNET *sn )
 }
 
     SNET *
-snet_attach( fd, max )
-    int		fd;
-    int		max;
+snet_attach( int fd, int max )
 {
     SNET		*sn;
 
@@ -96,11 +90,7 @@ snet_attach( fd, max )
 }
 
     SNET *
-snet_open( path, flags, mode, max )
-    char	*path;
-    int		flags;
-    int		mode;
-    int         max;
+snet_open( char *path, int flags, int mode, int max )
 {
     int		fd;
 
@@ -145,10 +135,7 @@ snet_timeout( SNET *sn, int flag, struct timeval *tv )
  * stack for specific errors.
  */
     int
-snet_starttls( sn, sslctx, sslaccept )
-    SNET		*sn;
-    SSL_CTX		*sslctx;
-    int			sslaccept;
+snet_starttls( SNET *sn, SSL_CTX *sslctx, int sslaccept )
 {
     int			rc;
 
@@ -171,9 +158,7 @@ snet_starttls( sn, sslctx, sslaccept )
 
 #ifdef HAVE_LIBSASL
     int
-snet_setsasl( sn, conn )
-    SNET	*sn;
-    sasl_conn_t	*conn;
+snet_setsasl( SNET *sn, sasl_conn_t *conn )
 {
 
     const int		*ssfp;
@@ -212,15 +197,7 @@ snet_setsasl( sn, conn )
  * Todo: %f, *, . and, -
  */
     ssize_t
-#ifdef __STDC__
 snet_writeftv( SNET *sn, struct timeval *tv, char *format, ... )
-#else /* __STDC__ */
-snet_writeftv( sn, tv, format, va_alist )
-    SNET		*sn;
-    struct timeval	*tv;
-    char		*format;
-    va_dcl
-#endif /* __STDC__ */
 {
     va_list		vl;
     char		dbuf[ 128 ], *p;
@@ -501,11 +478,7 @@ snet_select( int nfds, fd_set *rfds, fd_set *wfds, fd_set *efds,
 }
 
     static ssize_t
-snet_write0( sn, buf, len, tv )
-    SNET		*sn;
-    char		*buf;
-    size_t		len;
-    struct timeval	*tv;
+snet_write0( SNET *sn, char *buf, size_t len, struct timeval *tv )
 {
     fd_set		fds;
     int			rc, oflags;
@@ -629,10 +602,7 @@ restoreblocking:
  * Returns -1 for error, 0 in other cases
  */
     int
-snet_setcompression( sn, type, level )
-    SNET	*sn;
-    int		type;
-    int		level;
+snet_setcompression( SNET *sn, int type, int level )
 {
 #ifdef HAVE_ZLIB
     int		len = 0;
@@ -685,11 +655,7 @@ snet_setcompression( sn, type, level )
 }
 
     static ssize_t
-snet_read0( sn, buf, len, tv )
-    SNET		*sn;
-    char		*buf;
-    size_t		len;
-    struct timeval	*tv;
+snet_read0( SNET *sn, char *buf, size_t len, struct timeval *tv )
 {
 #ifdef HAVE_ZLIB
     ssize_t rr;
@@ -726,11 +692,7 @@ snet_read0( sn, buf, len, tv )
 }
 
     ssize_t
-snet_write( sn, buf, len, tv )
-    SNET		*sn;
-    char		*buf;
-    size_t		len;
-    struct timeval	*tv;
+snet_write( SNET *sn, char *buf, size_t len, struct timeval *tv )
 {
 #ifdef HAVE_ZLIB
     char		cobuf[ 8192 ];
@@ -772,11 +734,7 @@ snet_write( sn, buf, len, tv )
 }
 
     static ssize_t
-snet_read1( sn, buf, len, tv )
-    SNET		*sn;
-    char		*buf;
-    size_t		len;
-    struct timeval	*tv;
+snet_read1( SNET *sn, char *buf, size_t len, struct timeval *tv )
 {
     fd_set		fds;
     ssize_t		rc;
@@ -887,8 +845,7 @@ restoreblocking:
 }
 
     int
-snet_hasdata( sn )
-    SNET		*sn;
+snet_hasdata( SNET *sn )
 {
     if ( sn->sn_rcur < sn->sn_rend ) {
 	if ( sn->sn_rstate == SNET_FUZZY ) {
@@ -909,11 +866,7 @@ snet_hasdata( sn )
  * with snet_getline()'s buffering.
  */
     ssize_t
-snet_read( sn, buf, len, tv )
-    SNET		*sn;
-    char		*buf;
-    size_t		len;
-    struct timeval	*tv;
+snet_read( SNET *sn, char *buf, size_t len, struct timeval *tv )
 {
     ssize_t		rc;
 
@@ -953,9 +906,7 @@ snet_read( sn, buf, len, tv )
  * may be overwritten by subsequent calls.
  */
     char *
-snet_getline( sn, tv )
-    SNET		*sn;
-    struct timeval	*tv;
+snet_getline( SNET *sn, struct timeval *tv )
 {
     char		*eol, *line;
     ssize_t		rc;
@@ -1030,10 +981,7 @@ snet_getline( sn, tv )
 }
 
     char * 
-snet_getline_multi( sn, logger, tv )
-    SNET		*sn;
-    void		(*logger)( char * );
-    struct timeval	*tv;
+snet_getline_multi( SNET *sn, void (*logger)( char * ), struct timeval *tv )
 {
     char		*line; 
 
