@@ -20,16 +20,24 @@ AC_CHECK_LIB([ssl], [SSL_accept], , [AC_MSG_ERROR([Couldn't find SSL_accept in l
 AC_CHECK_LIB([crypto], [X509_get_subject_name], , [AC_MSG_ERROR([Couldn't find X509_get_subject_name in libcrypto. Crypto support is mandatory.])])
 
 # Checks for zlib.
-AC_CHECK_HEADER([zlib.h],
-	AC_SEARCH_LIBS([deflate], [z], [AC_DEFINE([HAVE_ZLIB], [1], [zlib.h])], AC_MSG_WARN([Couldn't enable zlib: deflate() not found])),
-        AC_MSG_WARN([Couldn't enable zlib: zlib.h not found]))
+AC_ARG_ENABLE([zlib], AS_HELP_STRING([--disable-zlib], [Enable zlib compression]))
+AS_IF([test "x$enable_zlib" != "xno"],
+	AC_CHECK_HEADER([zlib.h],
+		AC_SEARCH_LIBS([deflate], [z], [AC_DEFINE([HAVE_ZLIB], [1], [zlib.h])], AC_MSG_ERROR([Couldn't enable zlib: deflate() not found])),
+       	 AC_MSG_ERROR([Couldn't enable zlib: zlib.h not found])
+	)
+)
 
 # Checks for SASL
-AC_CHECK_HEADER([sasl/sasl.h],
-	AC_SEARCH_LIBS([sasl_client_init], [sasl sasl2 gsasl],
-		[AC_DEFINE([HAVE_LIBSASL], [1], [sasl.h])],
-		AC_MSG_WARN([Couldn't enable SASL - sasl_client_init() not found]) ),
-	AC_MSG_WARN([Couldn't enable SASL - sasl/sasl.h not found]))
+AC_ARG_ENABLE([sasl], AS_HELP_STRING([--disable-sasl], [Disable SASL authentication]))
+AS_IF([test "x$enable_sasl" != "xno"],
+	AC_CHECK_HEADER([sasl/sasl.h], 
+		AC_SEARCH_LIBS([sasl_client_init], [sasl sasl2 gsasl],
+			[AC_DEFINE([HAVE_LIBSASL], [1], [sasl.h])],
+			AC_MSG_ERROR([Couldn't enable SASL - sasl_client_init() not found]) ),
+		AC_MSG_ERROR([Couldn't enable SASL - sasl/sasl.h not found])
+	)
+)
 
 AC_CHECK_INCLUDES_DEFAULT
 AC_PROG_EGREP
